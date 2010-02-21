@@ -34,7 +34,7 @@ namespace MvcTurbine.Ninject {
     /// </remarks>
     [Serializable]
     public class NinjectServiceLocator : IServiceLocator {
-        private TurbineModule currentModule;
+        private NinjectRegistrar currentModule;
 
         /// <summary>
         /// Default constructor. Locator is instantiated with a new <seealso cref="StandardKernel"/> instance.
@@ -59,17 +59,6 @@ namespace MvcTurbine.Ninject {
         /// Gets the current <see cref="IKernel"/> associated with this instance.
         /// </summary>
         public IKernel Container { get; private set; }
-
-        #region Implementation of IServiceLocator
-
-        /// <summary>
-        /// Gets the associated <see cref="IServiceRegistrator"/> to process.
-        /// </summary>
-        /// <returns></returns>
-        public IServiceRegistrator Batch() {
-            currentModule = new TurbineModule(Container);
-            return currentModule;
-        }
 
         /// <summary>
         /// Resolves the service of the specified type.
@@ -124,66 +113,6 @@ namespace MvcTurbine.Ninject {
             return Container.GetAll<T>().ToList();
         }
 
-        public void RegisterAll<Interface>() {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Registers the implemation type, <paramref name="implType"/>, with the locator under
-        /// the <see cref="Interface"/> service type.
-        /// </summary>
-        /// <typeparam name="Interface">Type of the service to register.</typeparam>
-        /// <param name="implType">Implementation type to use for registration.</param>
-        public void Register<Interface>(Type implType) where Interface : class {
-            currentModule.Register<Interface>(implType);
-        }
-
-        /// <summary>
-        /// Registers the implemation type, <see cref="Implementation"/>, with the locator under
-        /// the <see cref="Interface"/> service type.
-        /// </summary>
-        /// <typeparam name="Interface">Type of the service to register.</typeparam>
-        /// <typeparam name="Implementation">Implementation type to use for registration.
-        /// </typeparam>
-        public void Register<Interface, Implementation>()
-            where Implementation : class, Interface {
-
-            currentModule.Register<Interface, Implementation>();
-        }
-
-        /// <summary>
-        /// Registers the implemation type, <see cref="Implementation"/>, with the locator under
-        /// the <see cref="Interface"/> service type.
-        /// </summary>
-        /// <typeparam name="Interface">Type of the service to register.</typeparam>
-        /// <typeparam name="Implementation">Implementation type to use for registration.
-        /// </typeparam>
-        /// <param name="key">Unique key to distinguish the service.</param>
-        public void Register<Interface, Implementation>(string key)
-            where Implementation : class, Interface {
-
-            currentModule.Register<Interface, Implementation>(key);
-        }
-
-        /// <summary>
-        /// Registers the implementation type, <paramref name="type"/>, with the locator
-        /// by the given string key.
-        /// </summary>
-        /// <param name="key">Unique key to distinguish the service.</param>
-        /// <param name="type">Implementation type to use.</param>
-        public void Register(string key, Type type) {
-            currentModule.Register(key, type);
-        }
-
-        /// <summary>
-        /// See <see cref="IServiceLocator.Register(System.Type,System.Type)"/>.
-        /// </summary>
-        /// <param name="serviceType"></param>
-        /// <param name="implType"></param>
-        public void Register(Type serviceType, Type implType) {
-            currentModule.Register(serviceType, implType);
-        }
-
         /// <summary>
         /// Releases (disposes) the service instance from within the locator.
         /// </summary>
@@ -204,6 +133,15 @@ namespace MvcTurbine.Ninject {
             currentModule = null;
         }
 
+        public TService Inject<TService>(TService instance) where TService : class {
+            Container.Inject(instance);
+            return instance;
+        }
+
+        [Obsolete("Not used with this implementation of IServiceLocator.")]
+        public void TearDown<TService>(TService instance) where TService : class {
+        }
+
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
@@ -211,7 +149,5 @@ namespace MvcTurbine.Ninject {
         public void Dispose() {
             Reset();
         }
-
-        #endregion
     }
 }

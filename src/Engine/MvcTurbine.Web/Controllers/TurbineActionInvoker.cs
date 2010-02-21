@@ -86,10 +86,34 @@ namespace MvcTurbine.Web.Controllers {
         protected override FilterInfo GetFilters(ControllerContext controllerContext, ActionDescriptor actionDescriptor) {
             var defaultFilters = base.GetFilters(controllerContext, actionDescriptor) ?? new FilterInfo();
 
+            InjectDependenciesIntoFilters(defaultFilters);
+
             var finder = GetFilterFinder();
             var registeredFilters = finder.FindFilters(actionDescriptor);
 
             return new MergedFilters(defaultFilters, registeredFilters);
+        }
+
+        /// <summary>
+        /// For each of the filters associated with the action, inject any dependencies for them.
+        /// </summary>
+        /// <param name="filters"></param>
+        protected virtual void InjectDependenciesIntoFilters(FilterInfo filters) {
+            foreach (var actionFilter in filters.ActionFilters) {
+                ServiceLocator.Inject(actionFilter);
+            }
+
+            foreach (var authorizationFilter in filters.AuthorizationFilters) {
+                ServiceLocator.Inject(authorizationFilter);
+            }
+
+            foreach (var exceptionFilter in filters.ExceptionFilters) {
+                ServiceLocator.Inject(exceptionFilter);
+            }
+
+            foreach (var resultFilter in filters.ResultFilters) {
+                ServiceLocator.Inject(resultFilter);
+            }
         }
 
         /// <summary>

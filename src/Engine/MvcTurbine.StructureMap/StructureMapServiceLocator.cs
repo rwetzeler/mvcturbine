@@ -33,7 +33,7 @@ namespace MvcTurbine.StructureMap {
     /// </remarks>
     [Serializable]
     public class StructureMapServiceLocator : IServiceLocator {
-        private TurbineRegistry currentRegistry;
+        private StructureMapRegistrar currentRegistry;
 
         /// <summary>
         /// Creates an instance with an empty <seealso cref="IContainer"/> instance.
@@ -54,13 +54,6 @@ namespace MvcTurbine.StructureMap {
         /// Gets the <see cref="IContainer"/> associated with this instance.
         /// </summary>
         public IContainer Container { private set; get; }
-
-        #region IServiceLocator Members
-
-        public IServiceRegistrator Batch() {
-            currentRegistry = new TurbineRegistry(Container);
-            return currentRegistry;
-        }
 
         /// <summary>
         /// Resolves the service of the specified type.
@@ -114,59 +107,6 @@ namespace MvcTurbine.StructureMap {
         }
 
         /// <summary>
-        /// Registers the implemation type, <paramref name="implType"/>, with the locator under
-        /// the <see cref="Interface"/> service type.
-        /// </summary>
-        /// <typeparam name="Interface">Type of the service to register.</typeparam>
-        /// <param name="implType">Implementation type to use for registration.</param>
-        public void Register<Interface>(Type implType) where Interface : class {
-            currentRegistry.Register<Interface>(implType);
-        }
-
-        /// <summary>
-        /// Registers the implemation type, <see cref="Implementation"/>, with the locator under
-        /// the <see cref="Interface"/> service type.
-        /// </summary>
-        /// <typeparam name="Interface">Type of the service to register.</typeparam>
-        /// <typeparam name="Implementation">Implementation type to use for registration.
-        /// </typeparam>
-        public void Register<Interface, Implementation>() where Implementation : class, Interface {
-            currentRegistry.Register<Interface, Implementation>();
-        }
-
-        /// <summary>
-        /// Registers the implemation type, <see cref="Implementation"/>, with the locator under
-        /// the <see cref="Interface"/> service type.
-        /// </summary>
-        /// <typeparam name="Interface">Type of the service to register.</typeparam>
-        /// <typeparam name="Implementation">Implementation type to use for registration.
-        /// </typeparam>
-        /// <param name="key">Unique key to distinguish the service.</param>
-        public void Register<Interface, Implementation>(string key) where Implementation : class, Interface {
-            currentRegistry.Register<Interface, Implementation>(key);
-        }
-
-        /// <summary>
-        /// Registers the implementation type, <paramref name="type"/>, with the locator
-        /// by the given string key.
-        /// </summary>
-        /// <param name="key">Unique key to distinguish the service.</param>
-        /// <param name="type">Implementation type to use.</param>
-        public void Register(string key, Type type) {
-            currentRegistry.Register(key, type);
-        }
-
-        /// <summary>
-        /// Registers the implementation type, <paramref name="implType"/>, with the locator
-        /// by the given service type, <paramref name="serviceType"/>
-        /// </summary>
-        /// <param name="serviceType">Type of the service to register.</param>
-        /// <param name="implType">Implementation to associate with the service.</param>
-        public void Register(Type serviceType, Type implType) {
-            currentRegistry.Register(serviceType, implType);
-        }
-
-        /// <summary>
         /// Releases (disposes) the service instance from within the locator.
         /// </summary>
         /// <param name="instance">Instance of a service to dipose from the locator.</param>
@@ -181,6 +121,16 @@ namespace MvcTurbine.StructureMap {
         public void Reset() {
         }
 
+        public TService Inject<TService>(TService instance) where TService : class {
+            Container.Inject(instance);
+            
+            return instance;
+        }
+
+        [Obsolete("Not used for any real purposes.")]
+        public void TearDown<TService>(TService instance) where TService : class {
+        }
+
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
@@ -192,7 +142,5 @@ namespace MvcTurbine.StructureMap {
             if (disposable == null) return;
             disposable.Dispose();
         }
-
-        #endregion
     }
 }

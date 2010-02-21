@@ -29,9 +29,14 @@ namespace MvcTurbine {
     /// </summary>
     public interface IRotorContext : IDisposable {
         /// <summary>
-        /// Gets or sets the current implementation of <see cref="IServiceLocator"/>.
+        /// Gets the current implementation of <see cref="IServiceLocator"/>.
         /// </summary>
         IServiceLocator ServiceLocator { get; }
+
+        /// <summary>
+        /// Gets the current implementation of the <see cref="IRegistrar"/>
+        /// </summary>
+        IRegistrar Registrar { get; }
 
         /// <summary>
         /// Gets or sets the current instance of <see cref="ITurbineApplication"/>.

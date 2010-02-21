@@ -19,46 +19,68 @@
 
 #endregion
 
-namespace MvcTurbine.StructureMap {
+namespace MvcTurbine.Ninject {
     using System;
     using ComponentModel;
-    using global::StructureMap;
-    using global::StructureMap.Configuration.DSL;
+    using global::Ninject;
+    using global::Ninject.Modules;
 
     /// <summary>
-    /// Internal registry for Turbine to use
+    /// Defines a module that can be used for registering components
+    /// across the application.
     /// </summary>
-    public class TurbineRegistry : Registry, IServiceRegistrator {
+    public class NinjectRegistrar : NinjectModule, IRegistrar {
+
+        private Guid moduleId;
 
         /// <summary>
         /// Default constructor.
         /// </summary>
-        /// <param name="container"></param>
-        public TurbineRegistry(IContainer container) {
-            Container = container;
+        /// <param name="kernel"></param>
+        public NinjectRegistrar(IKernel kernel) {
+            Container = kernel;
+            Container.Load(this);
         }
 
         /// <summary>
-        /// Gets the associated <see cref="IContainer"/> with this registry.
+        /// Gets the associated <see cref="IKernel"/> for the registration.
         /// </summary>
-        public IContainer Container { get; private set; }
+        public IKernel Container { get; private set; }
+
+        /// <summary>
+        /// Sets the unique ID for the module
+        /// </summary>
+        public override void Load() {
+            moduleId = Guid.NewGuid();
+        }
+
+        /// <summary>
+        /// Gets the name for the module
+        /// </summary>
+        public override string Name {
+            get {
+                return moduleId.ToString();
+            }
+        }
 
         /// <summary>
         /// Registers all the services of type <typeparamref name="Interface"/> into the container.
         /// </summary>
         /// <typeparam name="Interface"></typeparam>
         public void RegisterAll<Interface>() {
-            Scan(scanner => scanner.AddAllTypesOf<Interface>());
+            RegisterAll<Interface>();
         }
 
         /// <summary>
-        /// Registers the specified <paramref name="implType"/> for the <typeparamref name="Interface"/> contract.
+        /// Registers the implemation type, <paramref name="implType"/>, with the locator under
+        /// the <see cref="Interface"/> service type.
         /// </summary>
-        /// <typeparam name="Interface"></typeparam>
-        /// <param name="implType"></param>
+        /// <typeparam name="Interface">Type of the service to register.</typeparam>
+        /// <param name="implType">Implementation type to use for registration.</param>
         public void Register<Interface>(Type implType) where Interface : class {
-            ForRequestedType(typeof(Interface))
-                .AddType(implType);
+            string key = string.Format("{0}-{1}", typeof(Interface).Name, implType.FullName);
+
+            Bind<Interface>().To(implType).Named(key);
         }
 
         /// <summary>
@@ -68,9 +90,10 @@ namespace MvcTurbine.StructureMap {
         /// <typeparam name="Interface">Type of the service to register.</typeparam>
         /// <typeparam name="Implementation">Implementation type to use for registration.
         /// </typeparam>
-        public void Register<Interface, Implementation>() where Implementation : class, Interface {
-            ForRequestedType<Interface>()
-                .AddConcreteType<Implementation>();
+        public void Register<Interface, Implementation>()
+            where Implementation : class, Interface {
+
+            Bind<Interface>().To<Implementation>();
         }
 
         /// <summary>
@@ -81,13 +104,10 @@ namespace MvcTurbine.StructureMap {
         /// <typeparam name="Implementation">Implementation type to use for registration.
         /// </typeparam>
         /// <param name="key">Unique key to distinguish the service.</param>
-        public void Register<Interface, Implementation>(string key) where Implementation : class, Interface {
-            Type serviceType = typeof(Interface);
-            Type implType = typeof(Implementation);
+        public void Register<Interface, Implementation>(string key)
+            where Implementation : class, Interface {
 
-            ForRequestedType(serviceType)
-                .AddType(implType)
-                .WithName(key);
+            Bind<Interface>().To(typeof(Implementation)).Named(key);
         }
 
         /// <summary>
@@ -97,25 +117,16 @@ namespace MvcTurbine.StructureMap {
         /// <param name="key">Unique key to distinguish the service.</param>
         /// <param name="type">Implementation type to use.</param>
         public void Register(string key, Type type) {
-            ForRequestedType(type)
-                .AddType(type)
-                .WithName(key);
+            Bind(type).ToSelf().Named(key);
         }
 
         /// <summary>
-        /// Registers the implementation type, <paramref name="implType"/>, with the locator
-        /// by the given service type, <paramref name="serviceType"/>
+        /// See <see cref="IServiceLocator.Register(System.Type,System.Type)"/>.
         /// </summary>
-        /// <param name="serviceType">Type of the service to register.</param>
-        /// <param name="implType">Implementation to associate with the service.</param>
+        /// <param name="serviceType"></param>
+        /// <param name="implType"></param>
         public void Register(Type serviceType, Type implType) {
-            ForRequestedType(serviceType)
-                .AddType(implType);
-        }
-
-        public void Dispose() {
-            // Process the current registration
-            Container.Configure(x => x.AddRegistry(this));
-        }
+            Bind(serviceType).To(implType);
+        }        
     }
 }

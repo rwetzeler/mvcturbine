@@ -77,8 +77,8 @@ namespace MvcTurbine.ComponentModel {
         /// <param name="filter"></param>
         /// <param name="regAction"></param>
         /// <returns></returns>
-        public static ServiceRegistration Custom<TService>(Func<Type, Type, bool> filter, Action<IServiceLocator, Type> regAction)
-            where TService : class {
+        public static ServiceRegistration Custom<TService>(Func<Type, Type, bool> filter, 
+            Action<IRegistrar, Type> regAction) where TService : class {
 
             return new ServiceRegistration {
                 TypeFilter = filter,

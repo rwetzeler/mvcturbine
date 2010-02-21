@@ -1,4 +1,4 @@
-#region License
+﻿#region License
 
 //
 // Author: Javier Lozano <javier@lozanotek.com>
@@ -19,57 +19,28 @@
 
 #endregion
 
-namespace MvcTurbine.Ninject {
+namespace MvcTurbine.Unity {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
     using ComponentModel;
-    using global::Ninject;
-    using global::Ninject.Modules;
+    using Microsoft.Practices.Unity;
 
-    /// <summary>
-    /// Defines a module that can be used for registering components
-    /// across the application.
-    /// </summary>
-    public class TurbineModule : NinjectModule, IServiceRegistrator {
-
-        private Guid moduleId;
+    public class UnityRegistrar : IRegistrar {
 
         /// <summary>
         /// Default constructor.
         /// </summary>
-        /// <param name="kernel"></param>
-        public TurbineModule(IKernel kernel) {
-            Container = kernel;
-            Container.Load(this);
+        /// <param name="container"></param>
+        public UnityRegistrar(IUnityContainer container) {
+            Container = container;
         }
 
         /// <summary>
-        /// Gets the associated <see cref="IKernel"/> for the registration.
+        /// Gets the associated container for the system to use.
         /// </summary>
-        public IKernel Container { get; private set; }
-
-        /// <summary>
-        /// Sets the unique ID for the module
-        /// </summary>
-        public override void Load() {
-            moduleId = Guid.NewGuid();
-        }
-
-        /// <summary>
-        /// Gets the name for the module
-        /// </summary>
-        public override string Name {
-            get {
-                return moduleId.ToString();
-            }
-        }
-
-        /// <summary>
-        /// Registers all the services of type <typeparamref name="Interface"/> into the container.
-        /// </summary>
-        /// <typeparam name="Interface"></typeparam>
-        public void RegisterAll<Interface>() {
-            RegisterAll<Interface>();
-        }
+        public IUnityContainer Container { get; private set; }
 
         /// <summary>
         /// Registers the implemation type, <paramref name="implType"/>, with the locator under
@@ -78,9 +49,8 @@ namespace MvcTurbine.Ninject {
         /// <typeparam name="Interface">Type of the service to register.</typeparam>
         /// <param name="implType">Implementation type to use for registration.</param>
         public void Register<Interface>(Type implType) where Interface : class {
-            string key = string.Format("{0}-{1}", typeof(Interface).Name, implType.FullName);
-
-            Bind<Interface>().To(implType).Named(key);
+            var key = string.Format("{0}-{1}", typeof(Interface).Name, implType.FullName);
+            Container.RegisterType(typeof(Interface), implType, key);
         }
 
         /// <summary>
@@ -93,7 +63,7 @@ namespace MvcTurbine.Ninject {
         public void Register<Interface, Implementation>()
             where Implementation : class, Interface {
 
-            Bind<Interface>().To<Implementation>();
+            Container.RegisterType<Interface, Implementation>();
         }
 
         /// <summary>
@@ -105,9 +75,9 @@ namespace MvcTurbine.Ninject {
         /// </typeparam>
         /// <param name="key">Unique key to distinguish the service.</param>
         public void Register<Interface, Implementation>(string key)
-            where Implementation : class, Interface {
+             where Implementation : class, Interface {
 
-            Bind<Interface>().To(typeof(Implementation)).Named(key);
+            Container.RegisterType<Interface, Implementation>(key);
         }
 
         /// <summary>
@@ -117,16 +87,21 @@ namespace MvcTurbine.Ninject {
         /// <param name="key">Unique key to distinguish the service.</param>
         /// <param name="type">Implementation type to use.</param>
         public void Register(string key, Type type) {
-            Bind(type).ToSelf().Named(key);
+            Container.RegisterType(type, key);
         }
 
         /// <summary>
-        /// See <see cref="IServiceLocator.Register(System.Type,System.Type)"/>.
+        /// Registers the implementation type, <paramref name="implType"/>, with the locator
+        /// by the given service type, <paramref name="serviceType"/>
         /// </summary>
-        /// <param name="serviceType"></param>
-        /// <param name="implType"></param>
+        /// <param name="serviceType">Type of the service to register.</param>
+        /// <param name="implType">Implementation to associate with the service.</param>
         public void Register(Type serviceType, Type implType) {
-            Bind(serviceType).To(implType);
-        }        
+            Container.RegisterType(serviceType, implType);
+        }
+
+        public void RegisterAll<Interface>() {
+            //TODO: Implement this piece for Unity
+        }
     }
 }

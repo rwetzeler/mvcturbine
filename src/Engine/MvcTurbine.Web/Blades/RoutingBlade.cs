@@ -24,7 +24,7 @@ namespace MvcTurbine.Web.Blades {
     using System.Web.Routing;
     using ComponentModel;
     using MvcTurbine.Blades;
-    using MvcTurbine.Routing;
+    using Routing;
 
     /// <summary>
     /// Default <see cref="IBlade"/> that supports all ASP.NET Url routing components.    

@@ -43,13 +43,18 @@ namespace MvcTurbine.Web {
             Application = application;
         }
 
-        #region IRotorContext Members
-
         /// <summary>
-        /// Gets or sets the current implementation of <see cref="IServiceLocator"/>.
+        /// Gets the current implementation of <see cref="IServiceLocator"/>.
         /// </summary>
         public IServiceLocator ServiceLocator {
-            get { return Application.ServiceLocator; }
+            get { return Application.DependencyContext.ServiceLocator; }
+        }
+
+        /// <summary>
+        /// Gets the current implementation of <see cref="IRegistrar"/>.
+        /// </summary>
+        public IRegistrar Registrar {
+            get { return Application.DependencyContext.Registrar; }
         }
 
         /// <summary>
@@ -119,8 +124,6 @@ namespace MvcTurbine.Web {
             return list;
         }
 
-        #endregion
-
         /// <summary>
         /// Loads the assemblies from the <see cref="HttpRuntime.BinDirectory"/> into the 
         /// <see cref="AppDomain.CurrentDomain"/> to make the auto-registration process work after an AppPool reset.
@@ -175,9 +178,7 @@ namespace MvcTurbine.Web {
             Action<IBlade> autoRegAction = blade =>
             {
                 var autoRegistration = blade as ISupportAutoRegistration;
-                if (autoRegistration == null) {
-                    return;
-                }
+                if (autoRegistration == null) return;
 
                 autoRegistration.AddRegistrations(registrationList);
             };
@@ -224,11 +225,8 @@ namespace MvcTurbine.Web {
 
             lock (_regLock) {
                 if (registrationList.Count == 0) return;
-
-                using (ServiceLocator.Batch()) {
-                    foreach (IServiceRegistration reg in registrationList) {
-                        reg.Register(ServiceLocator);
-                    }
+                foreach (IServiceRegistration reg in registrationList) {
+                    reg.Register(Registrar);
                 }
             }
         }
@@ -244,10 +242,8 @@ namespace MvcTurbine.Web {
             IAutoRegistrator registrator = GetAutoRegistrator();
 
             lock (_regLock) {
-                using (ServiceLocator.Batch()) {
-                    foreach (ServiceRegistration registration in registrationList) {
-                        registrator.AutoRegister(registration);
-                    }
+                foreach (ServiceRegistration registration in registrationList) {
+                    registrator.AutoRegister(registration);
                 }
             }
         }
@@ -264,7 +260,7 @@ namespace MvcTurbine.Web {
                         try {
                             autoRegistrator = ServiceLocator.Resolve<IAutoRegistrator>();
                         } catch (ServiceResolutionException) {
-                            autoRegistrator = new DefaultAutoRegistrator(ServiceLocator);
+                            autoRegistrator = new DefaultAutoRegistrator(Registrar);
                         }
                     }
                 }

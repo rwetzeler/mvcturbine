@@ -35,7 +35,7 @@ namespace MvcTurbine.ComponentModel {
         /// <summary>
         /// Gets or sets the actual registration handler for the service
         /// </summary>
-        public Action<IServiceLocator, Type> RegistrationHandler { get; set; }
+        public Action<IRegistrar, Type> RegistrationHandler { get; set; }
 
         /// <summary>
         /// Gets or sets the filter, if any, to use for the types.

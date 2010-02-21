@@ -49,25 +49,32 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Xml" />
+    <Reference Include="System.ComponentModel.Composition, Version=2010.2.11.0, Culture=neutral, PublicKeyToken=null">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\lib\mef\System.ComponentModel.Composition.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\CommonInfo.cs">
       <Link>CommonInfo.cs</Link>
     </Compile>
+    <Compile Include="Blades\PriorityAttribute.cs" />
     <Compile Include="CollectionExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ComponentModel\AppDomainCatalog.cs" />
     <Compile Include="ComponentModel\AssemblyDependencyException.cs" />
     <Compile Include="ComponentModel\AssemblyFilter.cs" />
     <Compile Include="ComponentModel\AutoRegistrationList.cs" />
     <Compile Include="ComponentModel\CommonAssemblyFilter.cs" />
-    <Compile Include="ComponentModel\CompositionContext.cs" />
     <Compile Include="ComponentModel\DefaultAutoRegistrator.cs" />
     <Compile Include="ComponentModel\DefaultBinAssemblyLoader.cs" />
+    <Compile Include="ComponentModel\DependencyContext.cs" />
     <Compile Include="ComponentModel\DependencyResolutionException.cs" />
-    <Compile Include="ComponentModel\IServiceRegistrator.cs" />
+    <Compile Include="ComponentModel\ExceptionExtensions.cs" />
     <Compile Include="ComponentModel\IBinAssemblyLoader.cs" />
     <Compile Include="ComponentModel\IAutoRegistrator.cs" />
+    <Compile Include="ComponentModel\IRegistrar.cs" />
     <Compile Include="ComponentModel\IServiceRegistration.cs" />
     <Compile Include="ComponentModel\IServiceLocator.cs" />
     <Compile Include="ComponentModel\ISupportAutoRegistration.cs" />
@@ -88,6 +95,7 @@
     <Compile Include="Blades\BladeList.cs" />
     <Compile Include="Routing\IRouteRegistrator.cs" />
     <Compile Include="TypeExtensions.cs" />
+    <Compile Include="ComponentModel\ServiceLocatorExportProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">

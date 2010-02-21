@@ -31,21 +31,19 @@ namespace MvcTurbine.Web {
     /// </summary>
     public class TurbineApplication : HttpApplication, ITurbineApplication {
         private static IRotorContext rotorContext;
-        private static IServiceLocator serviceLocator;
-
-        #region ITurbineApplication Members
+        private static IDependencyContext dependencyContext;
 
         /// <summary>
-        /// Gets or sets the current implementation of <see cref="IServiceLocator"/>
-        /// the application instance will use.
+        /// Gets or sets the current <see cref="IDependencyContext"/> for the application instance to use.
         /// </summary>
-        public IServiceLocator ServiceLocator {
-            get { return serviceLocator; }
-            set { serviceLocator = value; }
+        public IDependencyContext DependencyContext
+        {
+            get { return dependencyContext; }
+            set { dependencyContext = value; }
         }
 
         /// <summary>
-        /// Gets or sets the current <see cref="RotorContext"/> for the application instance to use.
+        /// Gets or sets the current <see cref="IRotorContext"/> for the application instance to use.
         /// </summary>
         public IRotorContext CurrentContext {
             get { return rotorContext; }
@@ -71,8 +69,6 @@ namespace MvcTurbine.Web {
         /// </summary>
         public virtual void Shutdown() {
         }
-
-        #endregion
 
         /// <summary>
         /// Sets up one-time only execution for the application.
@@ -121,9 +117,7 @@ namespace MvcTurbine.Web {
         /// </remarks>
         protected virtual void InitializeHttpModules() {
             IList<IHttpModule> modules = ServiceLocator.ResolveServices<IHttpModule>();
-            if (modules == null) {
-                return;
-            }
+            if (modules == null) return;
 
             foreach (IHttpModule module in modules) {
                 module.Init(this);

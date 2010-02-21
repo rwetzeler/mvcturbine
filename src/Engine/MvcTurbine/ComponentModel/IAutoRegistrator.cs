@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 //
 // Author: Javier Lozano <javier@lozanotek.com>
@@ -20,10 +20,12 @@
 #endregion
 
 namespace MvcTurbine.ComponentModel {
-
+	using System.ComponentModel.Composition;
+	
     ///<summary>
     /// Defines the process of doing auto registration of a specified service type.
     ///</summary>
+	[InheritedExport]
     public interface IAutoRegistrator {
         /// <summary>
         /// Gets or sets the <seealso cref="AssemblyFilter"/> to use.

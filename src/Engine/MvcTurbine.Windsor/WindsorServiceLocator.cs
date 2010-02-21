@@ -22,6 +22,8 @@
 namespace MvcTurbine.Windsor {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
+    using Castle.MicroKernel.Resolvers.SpecializedResolvers;
     using Castle.Windsor;
     using ComponentModel;
 
@@ -30,13 +32,25 @@ namespace MvcTurbine.Windsor {
     /// </summary>
     [Serializable]
     public class WindsorServiceLocator : IServiceLocator {
-        private TurbineRegistrationList registrationList;
+        private WindsorRegistrar registrationList;
 
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public WindsorServiceLocator()
-            : this(new WindsorContainer()) {
+        public WindsorServiceLocator() : this(CreateContainer()) {
+        }
+
+        /// <summary>
+        /// Creates an <see cref="IWindsorContainer"/> instance with the right resolvers associated to it.
+        /// </summary>
+        /// <returns></returns>
+        private static IWindsorContainer CreateContainer() {
+            IWindsorContainer container = new WindsorContainer();
+            var kernel = container.Kernel;
+            kernel.Resolver.AddSubResolver(new ArrayResolver(kernel));
+            kernel.Resolver.AddSubResolver(new ListResolver(kernel));
+
+            return container;
         }
 
         /// <summary>
@@ -50,15 +64,6 @@ namespace MvcTurbine.Windsor {
         /// Gets or sets the current <see cref="IWindsorContainer"/> for the locator.
         ///</summary>
         public IWindsorContainer Container { get; private set; }
-
-        /// <summary>
-        /// Gets the associated <see cref="IServiceRegistrator"/> to process.
-        /// </summary>
-        /// <returns></returns>
-        public IServiceRegistrator Batch() {
-            registrationList = new TurbineRegistrationList(Container);
-            return registrationList;
-        }
 
         /// <summary>
         /// See <see cref="IServiceLocator.Resolve{T}()<>"/>.
@@ -112,56 +117,6 @@ namespace MvcTurbine.Windsor {
         }
 
         /// <summary>
-        /// See <see cref="IServiceLocator.Register{Interface}(Type)<>"/>.
-        /// </summary>
-        /// <typeparam name="Interface"></typeparam>
-        /// <param name="implType"></param>
-        public void Register<Interface>(Type implType) where Interface : class {
-            registrationList.Register<Interface>(implType);
-        }
-
-        /// <summary>
-        /// See <see cref="IServiceLocator.Register{Interface,Implementation}()<>"/>.
-        /// </summary>
-        /// <typeparam name="Interface"></typeparam>
-        /// <typeparam name="Implementation"></typeparam>
-        public void Register<Interface, Implementation>()
-            where Implementation : class, Interface {
-
-            registrationList.Register<Interface, Implementation>();
-        }
-
-        /// <summary>
-        /// See <see cref="IServiceLocator.Register{Interface,Implementation}(string)<>"/>
-        /// </summary>
-        /// <typeparam name="Interface"></typeparam>
-        /// <typeparam name="Implementation"></typeparam>
-        /// <param name="key"></param>
-        public void Register<Interface, Implementation>(string key)
-            where Implementation : class, Interface {
-
-            registrationList.Register<Interface, Implementation>(key);
-        }
-
-        /// <summary>
-        /// See <see cref="IServiceLocator.Register(string,System.Type)"/>.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="type"></param>
-        public void Register(string key, Type type) {
-            registrationList.Register(key, type);
-        }
-
-        /// <summary>
-        /// See <seealso cref="IServiceLocator.Register(System.Type,System.Type)"/>.
-        /// </summary>
-        /// <param name="serviceType"></param>
-        /// <param name="implType"></param>
-        public void Register(Type serviceType, Type implType) {
-            registrationList.Register(serviceType, implType);
-        }
-
-        /// <summary>
         /// See <see cref="IServiceLocator.Release"/>.
         /// </summary>
         /// <param name="instance"></param>
@@ -178,6 +133,27 @@ namespace MvcTurbine.Windsor {
             Container.Dispose();
             Container = null;
             registrationList = null;
+        }
+
+        public TService Inject<TService>(TService instance) where TService : class {
+            if (instance == null) return null;
+
+            Type instanceType = instance.GetType();
+            instanceType.GetProperties()
+                .Where(property => property.CanWrite && Container.Kernel.HasComponent(property.PropertyType))
+                .ForEach(property => property.SetValue(instance, Container.Resolve(property.PropertyType), null));
+
+            return instance;
+        }
+
+        public void TearDown<TService>(TService instance) where TService : class {
+            if (instance == null) return;
+
+            Type instanceType = instance.GetType();
+
+            instanceType.GetProperties()
+                .Where(property => Container.Kernel.HasComponent(property.PropertyType))
+                .ForEach(property => Container.Release(property.GetValue(instance, null)));
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-#region License
+﻿#region License
 
 //
 // Author: Javier Lozano <javier@lozanotek.com>
@@ -19,19 +19,15 @@
 
 #endregion
 
-namespace MvcTurbine.ComponentModel {
-	using System.ComponentModel.Composition;
-	
-    /// <summary>
-    /// Provides a simple way register components within your application.
-    /// </summary>
-    [InheritedExport]
-	public interface IServiceRegistration {
+namespace MvcTurbine.Blades {
+    using System;
 
-        /// <summary>
-        /// Registers the components with the specified <see cref="IServiceLocator"/> instance.
-        /// </summary>
-        /// <param name="registrar">Instance of <see cref="IServiceLocator"/> to use.</param>
-        void Register(IRegistrar registrar);
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+    public class PriorityAttribute : Attribute {
+        public PriorityAttribute(int value) {
+            Priority = value;
+        }
+
+        public int Priority { get; private set; }
     }
 }

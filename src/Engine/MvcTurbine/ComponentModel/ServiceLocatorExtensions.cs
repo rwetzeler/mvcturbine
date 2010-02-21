@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 //
 // Author: Javier Lozano <javier@lozanotek.com>
@@ -32,10 +32,15 @@ namespace MvcTurbine.ComponentModel {
         /// <returns></returns>
         public static TContainer GetUnderlyingContainer<TContainer>(this IServiceLocator locator)
             where TContainer : class {
-            if (locator == null) return null;
+            if (locator == null) {
+			 throw new System.NullReferenceException("IServiceLocator is null.");	
+			}
 
             var property = locator.GetType().GetProperty("Container");
-            if (property == null) return null;
+            if (property == null) {
+				var message = "Current IServiceLocator implementation does not contain a property called 'Container'";
+				throw new System.InvalidOperationException(message);
+			}
 
             return property.GetValue(locator, null) as TContainer;
         }

@@ -59,16 +59,6 @@ namespace MvcTurbine.Unity {
         /// </summary>
         public IUnityContainer Container { private set; get; }
 
-        #region IServiceLocator Members
-
-        /// <summary>
-        /// Gets the associated <see cref="IServiceRegistrator"/> to process.
-        /// </summary>
-        /// <returns></returns>
-        public IServiceRegistrator Batch() {
-            return new RegistrationStub();
-        }
-
         /// <summary>
         /// Resolves the service of the specified type.
         /// </summary>
@@ -118,66 +108,9 @@ namespace MvcTurbine.Unity {
         /// <returns>A list of service of type <see cref="T"/>, null otherwise.</returns>
         public IList<T> ResolveServices<T>() where T : class {
             IEnumerable<T> services = Container.ResolveAll<T>();
+            if(services == null) return null;
 
             return new List<T>(services);
-        }
-
-        /// <summary>
-        /// Registers the implemation type, <paramref name="implType"/>, with the locator under
-        /// the <see cref="Interface"/> service type.
-        /// </summary>
-        /// <typeparam name="Interface">Type of the service to register.</typeparam>
-        /// <param name="implType">Implementation type to use for registration.</param>
-        public void Register<Interface>(Type implType) where Interface : class {
-            var key = string.Format("{0}-{1}", typeof(Interface).Name, implType.FullName);
-            Container.RegisterType(typeof (Interface), implType, key);
-        }
-
-        /// <summary>
-        /// Registers the implemation type, <see cref="Implementation"/>, with the locator under
-        /// the <see cref="Interface"/> service type.
-        /// </summary>
-        /// <typeparam name="Interface">Type of the service to register.</typeparam>
-        /// <typeparam name="Implementation">Implementation type to use for registration.
-        /// </typeparam>
-        public void Register<Interface, Implementation>()
-            where Implementation : class, Interface {
-            
-            Container.RegisterType<Interface, Implementation>();
-        }
-
-        /// <summary>
-        /// Registers the implemation type, <see cref="Implementation"/>, with the locator under
-        /// the <see cref="Interface"/> service type.
-        /// </summary>
-        /// <typeparam name="Interface">Type of the service to register.</typeparam>
-        /// <typeparam name="Implementation">Implementation type to use for registration.
-        /// </typeparam>
-        /// <param name="key">Unique key to distinguish the service.</param>
-        public void Register<Interface, Implementation>(string key)
-             where Implementation : class, Interface {
-
-            Container.RegisterType<Interface, Implementation>(key);
-        }
-
-        /// <summary>
-        /// Registers the implementation type, <paramref name="type"/>, with the locator
-        /// by the given string key.
-        /// </summary>
-        /// <param name="key">Unique key to distinguish the service.</param>
-        /// <param name="type">Implementation type to use.</param>
-        public void Register(string key, Type type) {
-            Container.RegisterType(type, key);
-        }
-
-        /// <summary>
-        /// Registers the implementation type, <paramref name="implType"/>, with the locator
-        /// by the given service type, <paramref name="serviceType"/>
-        /// </summary>
-        /// <param name="serviceType">Type of the service to register.</param>
-        /// <param name="implType">Implementation to associate with the service.</param>
-        public void Register(Type serviceType, Type implType) {
-            Container.RegisterType(serviceType, implType);
         }
 
         /// <summary>
@@ -197,6 +130,14 @@ namespace MvcTurbine.Unity {
             Dispose();
         }
 
+        public TService Inject<TService>(TService instance) where TService : class {
+            return Container.BuildUp(instance);
+        }
+
+        public void TearDown<TService>(TService instance) where TService : class {
+            Container.Teardown(instance);
+        }
+
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
@@ -206,40 +147,6 @@ namespace MvcTurbine.Unity {
 
             Container.Dispose();
             Container = null;
-        }
-
-        #endregion
-    }
-
-    /// <summary>
-    /// This class is for stubbing purposes only.
-    /// </summary>
-    internal sealed class RegistrationStub : IServiceRegistrator {
-        public void Dispose() {
-        }
-
-        public void RegisterAll<Interface>() {
-            throw new NotImplementedException();
-        }
-
-        public void Register<Interface>(Type implType) where Interface : class {
-            throw new NotImplementedException();
-        }
-
-        public void Register<Interface, Implementation>() where Implementation : class, Interface {
-            throw new NotImplementedException();
-        }
-
-        public void Register<Interface, Implementation>(string key) where Implementation : class, Interface {
-            throw new NotImplementedException();
-        }
-
-        public void Register(string key, Type type) {
-            throw new NotImplementedException();
-        }
-
-        public void Register(Type serviceType, Type implType) {
-            throw new NotImplementedException();
         }
     }
 }

@@ -24,7 +24,6 @@ namespace MvcTurbine.ComponentModel {
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
-    using System.Text;
 
     /// <summary>
     /// Default implementation of <seealso cref="IAutoRegistrator"/>.
@@ -33,20 +32,18 @@ namespace MvcTurbine.ComponentModel {
         private static readonly object _lock = new object();
 
         /// <summary>
-        /// Creates an instance with the specified <seealso cref="IServiceLocator"/> implementation.
+        /// Creates an instance with the specified <seealso cref="IRegistrar"/> implementation.
         /// </summary>
-        /// <param name="locator"></param>
-        public DefaultAutoRegistrator(IServiceLocator locator) {
-            ServiceLocator = locator;
+        /// <param name="registrar"></param>
+        public DefaultAutoRegistrator(IRegistrar registrar) {
+            Registrar = registrar;
             Filter = new CommonAssemblyFilter();
         }
 
         /// <summary>
-        /// Gets the <seealso cref="IServiceLocator"/> associated with this instance.
+        /// Gets the <seealso cref="IRegistrar"/> associated with this instance.
         /// </summary>
-        public IServiceLocator ServiceLocator { get; private set; }
-
-        #region IAutoRegistrator Members
+        public IRegistrar Registrar { get; private set; }
 
         /// <summary>
         /// Gets or sets the <seealso cref="AssemblyFilter"/> to use.
@@ -73,53 +70,17 @@ namespace MvcTurbine.ComponentModel {
                             .Where(matchedType => typeFilter(matchedType, serviceType));
 
                         foreach (Type type in registrationTypes) {
-                            registration(ServiceLocator, type);
+                            registration(Registrar, type);
                         }
                     } catch (ReflectionTypeLoadException loadException) {
                         string assemblyName = assembly.FullName;
-                        string message = FormatLoaderExceptionMessage(assemblyName, loadException);
+                        string detailedMessage = loadException.GetDetailedMessage(assemblyName);
 
-                        throw new DependencyResolutionException(assemblyName, message);
+                        throw new DependencyResolutionException(assemblyName, detailedMessage);
                     }
                 }
             }
         }
-
-        /// <summary>
-        /// Provides formatting information for troubleshooting a missing reference issue.
-        /// </summary>
-        /// <param name="assemblyName"></param>
-        /// <param name="exception"></param>
-        /// <returns></returns>
-        private static string FormatLoaderExceptionMessage(string assemblyName, ReflectionTypeLoadException exception) {
-            StringBuilder buffer = new StringBuilder();
-            buffer.AppendFormat("Could not load dependencies for assembly '{0}'", assemblyName);
-            buffer.AppendLine();
-            buffer.AppendLine("Type Loader Exception");
-            buffer.AppendLine("---------------------");
-            buffer.AppendLine();
-            buffer.AppendLine(exception.Message);
-            buffer.AppendLine("---------------------");
-            buffer.AppendLine();
-
-            var exceptions = exception.LoaderExceptions;
-
-            if (exceptions != null && exceptions.Length > 0) {
-                buffer.AppendLine("Exceptions: ");
-                buffer.AppendLine("---------------------");
-                buffer.AppendLine();
-
-                foreach (var loaderException in exceptions) {
-                    buffer.AppendLine(loaderException.Message);
-                    buffer.AppendLine("---------------------");
-                    buffer.AppendLine();
-                }
-            }
-
-            return buffer.ToString();
-        }
-
-        #endregion
 
         /// <summary>
         /// Gets all the assemblies after the <see cref="Filter"/> property is applied.
@@ -128,7 +89,7 @@ namespace MvcTurbine.ComponentModel {
         protected virtual IEnumerable<Assembly> GetAssemblies() {
             if (Filter != null) {
                 return AppDomain.CurrentDomain.GetAssemblies()
-                        .Where(assembly => !Filter.Match(assembly.FullName)).ToList();
+                    .Where(assembly => !Filter.Match(assembly.FullName));
             }
 
             return AppDomain.CurrentDomain.GetAssemblies();

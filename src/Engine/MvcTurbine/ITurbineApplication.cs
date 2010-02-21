@@ -26,12 +26,10 @@ namespace MvcTurbine {
     /// Provides the infrastructure for Turbine flow.
     /// </summary>
     public interface ITurbineApplication {
-
         /// <summary>
-        /// Gets or sets the current implementation of <see cref="IServiceLocator"/>
-        /// the application instance will use.
+        /// Gets or sets the implementation of <see cref="IDependencyContext"/> to use.
         /// </summary>
-        IServiceLocator ServiceLocator { get; set; }
+        IDependencyContext DependencyContext { get; set; }
 
         /// <summary>
         /// Gets or sets the current <see cref="IRotorContext"/> for the application instance to use.

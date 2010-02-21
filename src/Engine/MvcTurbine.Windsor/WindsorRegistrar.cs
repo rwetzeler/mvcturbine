@@ -30,13 +30,13 @@ namespace MvcTurbine.Windsor {
     /// <summary>
     /// Defines the list of registrations to process
     /// </summary>
-    public class TurbineRegistrationList : IServiceRegistrator {
+    public class WindsorRegistrar : IRegistrar {
         private readonly IList<IRegistration> registrationList;
         
         /// <summary>
         /// Default constructor
         /// </summary>
-        public TurbineRegistrationList(IWindsorContainer container) {
+        public WindsorRegistrar(IWindsorContainer container) {
             Container = container;
             registrationList = new List<IRegistration>();
         }

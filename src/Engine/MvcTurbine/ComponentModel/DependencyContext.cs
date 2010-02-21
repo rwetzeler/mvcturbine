@@ -1,4 +1,4 @@
-#region License
+﻿#region License
 
 //
 // Author: Javier Lozano <javier@lozanotek.com>
@@ -20,18 +20,20 @@
 #endregion
 
 namespace MvcTurbine.ComponentModel {
-	using System.ComponentModel.Composition;
-	
     /// <summary>
-    /// Provides a simple way register components within your application.
+    /// Defines a tuple to aggregate both registration and resolution of types.
     /// </summary>
-    [InheritedExport]
-	public interface IServiceRegistration {
+    public interface IDependencyContext {
+        /// <summary>
+        /// Gets or sets the current implementation of <see cref="IServiceLocator"/>
+        /// the application instance will use.
+        /// </summary>
+        IServiceLocator ServiceLocator { get; set; }
 
         /// <summary>
-        /// Registers the components with the specified <see cref="IServiceLocator"/> instance.
+        /// Gets or sets the current implementation of <see cref="IRegistrar"/>
+        /// the application instance will use.
         /// </summary>
-        /// <param name="registrar">Instance of <see cref="IServiceLocator"/> to use.</param>
-        void Register(IRegistrar registrar);
+        IRegistrar Registrar { get; set; }
     }
 }

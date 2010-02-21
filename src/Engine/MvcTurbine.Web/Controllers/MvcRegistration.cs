@@ -14,8 +14,8 @@
         /// </summary>
         /// <returns></returns>
         public static ServiceRegistration RegisterController() {
-            return RegisterController((locator, type) =>
-                                      locator.Register(type, type));
+            return RegisterController((registrar, type) =>
+                                      registrar.Register(type, type));
         }
 
         /// <summary>
@@ -24,7 +24,7 @@
         /// <param name="regAction"></param>
         /// <returns></returns>
         public static ServiceRegistration RegisterController(
-            Action<IServiceLocator, Type> regAction) {
+            Action<IRegistrar, Type> regAction) {
             return Registration.Custom<IController>(RegistrationFilters.DefaultFilter, regAction);
         }
 
@@ -33,7 +33,7 @@
         /// </summary>
         /// <returns></returns>
         public static ServiceRegistration RegisterViewEngine() {
-            return RegisterViewEngine((locator, type) => locator.Register<IViewEngine>(type));
+            return RegisterViewEngine((registrar, type) => registrar.Register<IViewEngine>(type));
         }
 
         /// <summary>
@@ -41,7 +41,7 @@
         /// </summary>
         /// <param name="regAction"></param>
         /// <returns></returns>
-        public static ServiceRegistration RegisterViewEngine(Action<IServiceLocator, Type> regAction) {
+        public static ServiceRegistration RegisterViewEngine(Action<IRegistrar, Type> regAction) {
             return Registration.Custom<IViewEngine>(RegistrationFilters.DefaultFilter, regAction);
         }
 
@@ -52,7 +52,7 @@
         /// <returns></returns>
         public static ServiceRegistration RegisterFilter<TFilter>()
             where TFilter : class {
-            return RegisterFilter<TFilter>((locator, type) => locator.Register<TFilter>(type));
+            return RegisterFilter<TFilter>((registrar, type) => registrar.Register<TFilter>(type));
         }
 
         /// <summary>
@@ -61,7 +61,7 @@
         /// <typeparam name="TFilter"></typeparam>
         /// <param name="regAction"></param>
         /// <returns></returns>
-        public static ServiceRegistration RegisterFilter<TFilter>(Action<IServiceLocator, Type> regAction)
+        public static ServiceRegistration RegisterFilter<TFilter>(Action<IRegistrar, Type> regAction)
             where TFilter : class {
             return Registration.Custom<TFilter>(RegistrationFilters.DefaultFilter, regAction);
         }
@@ -71,7 +71,7 @@
         /// </summary>
         /// <returns></returns>
         public static ServiceRegistration RegisterBinder() {
-            return RegisterBinder((locator, type) => locator.Register<IFilterableModelBinder>(type));
+            return RegisterBinder((registrar, type) => registrar.Register<IFilterableModelBinder>(type));
         }
 
         /// <summary>
@@ -79,7 +79,7 @@
         /// </summary>
         /// <param name="regAction"></param>
         /// <returns></returns>
-        public static ServiceRegistration RegisterBinder(Action<IServiceLocator, Type> regAction) {
+        public static ServiceRegistration RegisterBinder(Action<IRegistrar, Type> regAction) {
             return Registration.Custom<IFilterableModelBinder>(MvcRegistrationFilters.ModelBinderFilter, regAction);
         }
     }
